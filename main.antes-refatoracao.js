@@ -1,0 +1,632 @@
+'use strict';
+
+
+/*
+    pesquisar por:
+        tipos ,  nome , geraçao , região , raridade
+        ( ✔ ) , ( ✔ ),  ( ✖ )  , ( ✖ ) , ( ✖ )
+    
+    
+    exibir informação:
+        nome   , imagem (alterar entre shiny's),  tipo  , região , geração (primeira aparição) , descrição,
+        ( ✔ ) ,  ( ✔ )                        , ( ✔ )  , ( ✔ ) ,  ( ✔ )                      ,  ( ✖ )
+*/
+let pagina=document.getElementById("pageN").value;
+
+const pokemonsComparar=[null,null]
+
+const fifoFiltroTipo=[null,null]
+const filtroTipo= {        
+    'grass'    : true,
+    'poison'   : true,
+    'fire'     : true,
+    'flying'   : true,
+    'water'    : true,
+    'bug'      : true,
+    'normal'   : true,
+    'electric' : true,
+    'ground'   : true,
+    'fighting' : true,
+    'psychic'  : true,
+    'rock'     : true,
+    'ice'      : true,
+    'ghost'    : true,
+    'dragon'   : true,
+    'fairy'    : true,
+    'steel'    : true,
+    'dark'     : true
+}
+
+
+
+
+
+const buscaApi = async() => {
+
+    console.log(`buscaApi([${fifoFiltroTipo[0]},${fifoFiltroTipo[1]}])`)
+    document.getElementById("Caixa_Pokemon").innerHTML = "";
+
+    const nomePokemon = document.getElementById('Pesquisa').value;
+    var filtragem=false;
+    var mostrar=[24*pagina, 24*(pagina+1), 0];
+    var tipos;
+
+    if(nomePokemon === ""){
+        console.log(fifoFiltroTipo)
+        if(fifoFiltroTipo[1]!=null){// Verifica se tem filtros de Tipo de Pokemon
+            filtragem= true;
+            const url_Tipos = `http://pokeapi.co/api/v2/type/${fifoFiltroTipo[1]}/`;
+            const dadoTipos = await fetch(url_Tipos);
+            tipos = await dadoTipos.json();
+        }
+
+
+        if(tipos?.results || tipos?.pokemon){// Verifica se foi criado
+            for (const pokemonResults of tipos.results??tipos.pokemon) {
+                mostrar[2]++;
+                console.log(`(${mostrar[0] >= mostrar[2]} && ${mostrar[2] >= mostrar[1]})`)
+                if(mostrar[0] >= mostrar[2]){console.log("skip");continue;}
+                if(mostrar[2] > mostrar[1]){break;}
+                var info = await infoPokemons(pokemonResults.name??pokemonResults.pokemon.name);
+                
+                // Se tiver um segundo Tipo ativo ele verifica se o pokemon 
+                // se encaixa e permite a criação do conteiner
+                if(fifoFiltroTipo[0]!=null){
+                
+                    // verifica em qual posicao esta o Tipo principal
+                    if(info.tipagem.tipo1 == tipos.name){ // 1°
+                        // verifica se o 2° Tipo é igual a um dos filtro
+                        if(!(info.tipagem.tipo2 == fifoFiltroTipo[0] ||
+                             info.tipagem.tipo2 == fifoFiltroTipo[1] ))
+                            {continue;}
+
+                    }
+                    if(info.tipagem.tipo2 == tipos.name){// 2°
+                        // verifica se a 1° Tipo é igual a um dos filtro
+                        if(!(info.tipagem.tipo1 == fifoFiltroTipo[0] ||
+                             info.tipagem.tipo1 == fifoFiltroTipo[1] ))
+                            {continue;}
+
+                    }
+                }
+                console.log(info.nome)
+                document.getElementById("Caixa_Pokemon").innerHTML += criarContainer(info);
+                console.log(mostrar)
+            }// Fin for()
+        }else{
+            for(let i=24*pagina+1; i<=24*(pagina+1);i++){
+                document.getElementById("Caixa_Pokemon").innerHTML += criarContainer(await infoPokemons(i));
+            }
+        }
+    }
+    else{
+        console.log("Pokemon em pesquisa");
+        document.getElementById("Caixa_Pokemon").innerHTML += criarContainer(await infoPokemons(nomePokemon));
+    }
+    
+}
+
+
+
+
+
+async function infoPokemons(Pokemon){
+    const url_Poke = `http://pokeapi.co/api/v2/pokemon/${Pokemon}`;
+    const dados1 = await fetch(url_Poke);
+    var Pokemon = await dados1.json();
+    
+    
+    const dados2 = await fetch(Pokemon.species.url);
+    var specie = await dados2.json();
+    var descricao;
+
+    for(let traducao of specie.flavor_text_entries){
+        if(traducao.language.name !== "en"){continue}
+            descricao = traducao.flavor_text
+                .replace(/[\f\n]/g, " ")
+                .replace(/é/g, " ");
+        
+        if(traducao.language.name === "en"){break}; 
+    }
+
+
+    let variantes={"x":null,"y":null,"z":null, "mega":null, "gmax":null}
+    
+    for(let variante of specie.varieties){
+        if(variante.is_default || variante.pokemon.name.includes("-totem")){continue}
+        console.log(variante.pokemon.name)
+
+        if(variante.pokemon.name.includes("-mega")){
+            const url2 = `http://pokeapi.co/api/v2/pokemon-form/${variante.pokemon.name}`
+            const dados3 = await fetch(url2);
+            var poke_form = await dados3.json();
+
+            const url3 = poke_form.trigger_conditions[0].url;
+            const dados4 = await fetch(url3);
+            var item = await dados4.json();
+            
+            if(variante.pokemon.name.includes("-mega-x")){
+                variantes.x = item.sprites.default;
+            }else
+            if(variante.pokemon.name.includes("-mega-y")){
+                variantes.y = item.sprites.default;
+            }else
+            if(variante.pokemon.name.includes("-mega-z")){
+                item.sprites.default;
+            }else{
+                variantes.mega= item.sprites.default;
+            }
+        }
+        
+        if(variante.pokemon.name.includes("-gmax")){
+            const url2 = `http://pokeapi.co/api/v2/item/1141`
+            const dados3 = await fetch(url2);
+            var poke_form = await dados3.json();
+
+           
+            
+            variantes.gmax = "images/giganta_max-removebg.png";
+        }
+        
+    }
+
+    
+    return {
+            ["entrada"]:specie.order,
+            ["nome"]:Pokemon.name,
+            ["regiao"]:Pokemon.encounters,
+            ["geracao"]:Pokemon.game_indices[0]?.version["name"],
+            ["descricao"]:descricao,
+            ["imagem"]:{"normal" : Pokemon.sprites.other["official-artwork"]["front_default"],
+                        "shiny"  : Pokemon.sprites.other["official-artwork"]["front_shiny"]
+                       },
+            ["tipagem"]:{"tipo1" : Pokemon.types[0].type['name'],
+                         "tipo2" : Pokemon.types[1]?.type['name']
+                        },
+            ["alternativo"]:{"mega":variantes.mega??null, "mega-x": variantes.x??null, "mega-y": variantes.y??null, "mega-z":variantes.z??null, "gigantamax":variantes.gmax??null},                        
+            ["status"]:{[`${Pokemon.stats[0].stat.name.replace("-", "_")}`] : Pokemon.stats[0].base_stat,
+                        [`${Pokemon.stats[1].stat.name.replace("-", "_")}`] : Pokemon.stats[1].base_stat,
+                        [`${Pokemon.stats[2].stat.name.replace("-", "_")}`] : Pokemon.stats[2].base_stat,
+                        [`${Pokemon.stats[3].stat.name.replace("-", "_")}`] : Pokemon.stats[3].base_stat,
+                        [`${Pokemon.stats[4].stat.name.replace("-", "_")}`] : Pokemon.stats[4].base_stat,
+                        [`${Pokemon.stats[5].stat.name.replace("-", "_")}`] : Pokemon.stats[5].base_stat,
+                       },
+        };
+};
+
+
+
+
+
+
+function criarContainer(info){//console.log("Container Criado para "+info.nome)
+    return `
+        <div class="container" style="background: linear-gradient(145deg, ${cores(info.tipagem.tipo1)}47%, rgba(0, 0, 0, 1)47%,rgba(0, 0, 0, 1)53%,   ${cores(info.tipagem.tipo2?info.tipagem.tipo2:info.tipagem.tipo1, .65)}53%)">
+        <button class="pokeballInner" onclick="popUpInfo('${info.nome}')">
+                <img src="${info.imagem.normal}" alt="${info.nome}" style="width:120px;height:120px;">
+                
+            </button>
+            <p>${info.nome}</p>
+        </div>
+    `;
+}
+
+
+
+
+
+
+function retroceder(){
+    if(pagina > 0){
+        pagina--;
+    }else{
+        pagina= Math.floor(1025/24);    
+    }
+    document.getElementById("pageN").value = pagina;
+    buscaApi();
+}
+
+function paginaIdentifier(){
+    const seletor = document.getElementById("pageN").value;
+    pagina = seletor;
+    buscaApi();
+}
+
+function avancar(){    
+    if(pagina >= Math.floor(1025/24)){
+        pagina =0;
+    }else{pagina++;}
+    document.getElementById("pageN").value = pagina;
+    buscaApi();
+}
+
+
+
+
+
+
+async function filtros(){
+    const url_Tipos = `http://pokeapi.co/api/v2/type`;
+    const dadoTipos = await fetch(url_Tipos);
+    const listaTipos= await dadoTipos.json();
+    const div=document.getElementById("Caixa_Filtro");
+
+    if(document.getElementById("Botao_Filtro_off")){
+        document.getElementById("Botao_Filtro_off").id= "Botao_Filtro_on";
+
+        div.style.width="500px";
+        div.style.height="350px";
+
+        for (const tipos of listaTipos.results) {
+            if(tipos.name == "stellar" || tipos.name == "unknown"){continue}
+            div.innerHTML+=`
+                    <button class="filtro_Elemento" id="filtro_${tipos.name}" onclick="inverterValorElemento('${tipos.name}')" style="background-color:${cores(filtroTipo[tipos.name]?tipos.name:'off')}">
+                        ${tipos.name}
+                    </button>
+                `;
+    }
+    }else if(document.getElementById("Botao_Filtro_on")){
+        document.getElementById("Botao_Filtro_on").id= "Botao_Filtro_off";
+
+        div.style.width="500px";
+        div.style.height="34px";
+        for(let tipos in filtroTipo){
+            document.getElementById(`filtro_${tipos}`).remove();
+        }
+    }
+}
+
+
+
+
+
+function inverterValorElemento(x){
+    // Verifica (as 2 casas) para ver se o elemento 'x' ja esta selecionado.
+    // {TRUE} :> remove tal elemento 'x', e adiciona null a casa 0
+    console.log()
+    console.log(fifoFiltroTipo)
+    if(fifoFiltroTipo[0] == x ){
+        fifoFiltroTipo.splice(0,1,null);
+        console.log(fifoFiltroTipo)
+    }
+    else if(fifoFiltroTipo[1] == x ){
+        fifoFiltroTipo.splice(1,1);
+        fifoFiltroTipo.splice(0,0,null);
+        console.log(fifoFiltroTipo)
+    }else{
+        // Remove o primeiro elemento
+        fifoFiltroTipo.splice(0,1);
+        
+        // Substitui o segundo elemento se 'filtroTipo' do elemento 'x' for TRUE por 'x'
+        fifoFiltroTipo.splice(1,1,x);
+        //console.log(`pos adicionar: {${fifoFiltroTipo[0]}, ${fifoFiltroTipo[1]}}`)
+        
+        // Os elementos que estiverem dentro de 'fifoFiltroTipo' tem o valor TRUE, ao contrario sera FALSE
+        for(var i in filtroTipo){
+            if(i == fifoFiltroTipo[0] || i == fifoFiltroTipo[1]){
+               // console.log(`filtroTipo[${i}] = true;`)
+                filtroTipo[i]= true;
+
+            }else{
+                filtroTipo[i]= false;
+            }
+            
+        }
+    }
+    console.log("entrando no For")
+    
+    for(let i=0,y=1;i<17;i++){
+    //    console.log(` - fifoFiltroTipo[${Object.keys(fifoFiltroTipo)}] = ${!fifoFiltroTipo[i]}`)
+        if(!fifoFiltroTipo[i]){y++}
+        
+        if(y==17){for(let valores in filtroTipo){filtroTipo[valores]=!filtroTipo[valores];console.log(`filtroTipo[${valores}]=${filtroTipo[valores]}`)}}
+    }
+    console.log("saindo no For")
+    console.log(fifoFiltroTipo)
+    atualizarAparenciaFiltroTipos()
+
+    buscaApi([fifoFiltroTipo[0],fifoFiltroTipo[1]]);
+}
+
+
+
+
+
+
+function atualizarAparenciaFiltroTipos(){
+    for(var i in filtroTipo){
+        document.getElementById(`filtro_${i}`).style["background-color"] = cores(filtroTipo[i]?i:'off');
+        document.getElementById(`filtro_${i}`).style.color = filtroTipo[i]?"black":"white";
+    }
+}
+
+
+
+
+
+// Pop up de informações
+
+function ClosePopUpInfo(){
+    document.getElementById("PopUpInfo").style.display = "none";
+    document.getElementById("ShowComparacao").style.display="none";
+    document.getElementById("CompararIcon").style.display="none";
+    console.log("fechar")
+}
+
+
+function limparComparacao(){
+    pokemonsComparar[0] =null;
+    pokemonsComparar[1] =null;
+    document.getElementById("CompararIcon").style.display="none";
+}
+
+function expandirMegas() {
+    document.getElementById("ID_ListaDeMegas").classList.toggle("mostrar");
+}
+
+
+
+
+async function popUpInfo(PokemonName) {
+    
+    if(document.getElementById("ID_ListaDeMegas").classList[1] == "mostrar"){
+        document.getElementById("ID_ListaDeMegas").classList.toggle("mostrar");
+    }
+    
+    //define o display para mostrar
+    document.getElementById("PopUpInfo").style.display = "inline-block";
+    document.getElementById("ShowInfo").style.display="grid";
+    
+    //pega as informações do pokemon
+    let info = await infoPokemons(PokemonName);
+
+    //seu numero na pokedex
+    document.getElementById("pokeEntryPopUp").innerHTML=info.entrada;
+    //sua imagem
+    document.getElementById("imagemPopUp").children[0].src= info.imagem.normal;
+    //seu nome
+    document.getElementById("pokemonNamePopUp").innerHTML= info.nome;
+
+    //suas variantes de mega evoluções
+    if(info.alternativo["mega-x"] || info.alternativo["mega-y"] || info.alternativo["mega-z"] || info.alternativo["mega"]){
+        document.getElementById("ID_ListaDeMegas").innerHTML="";
+        document.getElementById("variantes_mega").style.display="unset"
+        for(let variantes in info.alternativo){
+            if(variantes == "gigantamax" || info.alternativo[variantes] == null){continue}
+            
+            document.getElementById("ID_ListaDeMegas").innerHTML+=`
+            <a style="font-size:12px;" onclick="popUpInfo('${info.nome.replace(/(?:-)mega(?:-[xyz])?/i, "").replace("-gmax", "")}-${variantes}')">
+                <img src="${info.alternativo[variantes]}" alt="${variantes}" style="height:40px;width:40px;margin-right:-5px;margin-left:-5px;">
+                Mega ${info.nome.replace(/(?:-)mega(?:-[xyz])?/i, "")} ${variantes.replace("mega-x", "X").replace("mega-y", "Y").replace("mega-z", "Z")}
+            </a>
+            `
+        }
+    }else{document.getElementById("variantes_mega").style.display="none"}
+    
+    //esconde o botão de Dynamax    
+    document.getElementById("ID_Dynamax").style.display="none";
+    document.getElementById("ID_Dynamax").classList["collored"];
+
+    //cria o link para redirecionar a foto da Dynamax
+    document.getElementById("ID_Dynamax").innerHTML=`
+        <button onclick="popUpInfo('${info.nome.replace(/(?:-)mega(?:-[xyz])?/i, "").replace("-gmax", "")}${info.nome.includes("-gmax")?"":"-gmax"}')" class="botaoAdicional" id="ID_Dynamax_Botao">
+            <img src="images/giganta_max-removebg.png"  alt="Mega Evo" style="height: 100%;width:162%;border-radius: 100%; margin-left:-5px;">
+        </button>`;
+
+    
+    if(info.alternativo["gigantamax"]){
+        //mostra o icone de Dynamax
+        document.getElementById("ID_Dynamax").style.display="unset";    
+        if(info.nome.includes("-gmax")){
+            //se não tiver na forma Dynamax remove a cor do icone
+            document.getElementById("ID_Dynamax").classList.add("collored");
+        }
+    }
+    
+    //se não tiver na forma Dynamax remove a cor do icone
+    if(!info.nome.includes("-gmax")){
+        document.getElementById("ID_Dynamax").classList.remove("collored");
+    }
+    
+    //Limpa o icone de tipos
+    document.getElementById("typesPopUp").innerHTML="";
+
+    //adiciona os tipos correspondentes a este pokemon
+    document.getElementById("typesPopUp").innerHTML+=`
+                    <div class="filtro_Elemento_PopUp" id="filtro_${info.tipagem.tipo1}_PopUp" style="background-color:${cores(info.tipagem.tipo1)}">
+                        ${info.tipagem.tipo1}
+                    </div>
+                `;
+    if(info.tipagem.tipo1 != info.tipagem.tipo2 && info.tipagem.tipo2 !==null){
+            document.getElementById("typesPopUp").innerHTML+=`
+                    <div class="filtro_Elemento_PopUp" id="filtro_${info.tipagem.tipo2}_PopUp" style="background-color:${cores(info.tipagem.tipo2)}">
+                        ${info.tipagem.tipo2}
+                    </div>
+                `;
+    }
+
+    //caso remove a div que tiver o ID abaixo, pois o pokemon tem apenas um elemento
+    document.getElementById("filtro_undefined_PopUp")?.remove();
+
+    //cria a barra de status dos pokemons
+    document.getElementById("statusPopUp").innerHTML=`
+                    <div id="hp">Hp: ${info.status["hp"]}
+                        <div id="hp2" style="background: linear-gradient(90deg, rgba(175,175,175,1) ${(info.status["hp"]/255)*100}%, rgba(45,45,45,1) ${(info.status["hp"]/255)*100}%); border:3px solid rgb(45,45,45); border-radius:15px; height:10px">
+                        </div>
+                    </div>
+                    <div id="attack">Atk: ${info.status["attack"]}
+                        <div id="attack2" style="background: linear-gradient(90deg, rgba(175,175,175,1) ${(info.status["attack"]/255)*100}%, rgba(45,45,45,1) ${(info.status["attack"]/255)*100}%); border:3px solid rgb(45,45,45); border-radius:15px; height:10px">
+                        </div>
+                    </div>
+                    <div id="defense">Defense: ${info.status["defense"]}
+                        <div id="defense2" style="background: linear-gradient(90deg, rgba(175,175,175,1) ${(info.status["defense"]/255)*100}%, rgba(45,45,45,1)  ${(info.status["defense"]/255)*100}%); border:3px solid rgb(45,45,45); border-radius:15px; height:10px">
+                        </div>
+                    </div>
+                    <div id="sp_attack">Sp Atk: ${info.status["special_attack"]}
+                        <div id="sp_attack2" style="background: linear-gradient(90deg, rgba(175,175,175,1) ${(info.status["special_attack"]/255)*100}%, rgba(45,45,45,1) ${(info.status["special_attack"]/255)*100}%); border:3px solid rgb(45,45,45); border-radius:15px; height:10px">
+                        </div>    
+                    </div>
+                    <div id="sp_defense">Sp Defense: ${info.status["special_defense"]}
+                        <div id="sp_defense2" style="background: linear-gradient(90deg, rgba(175,175,175,1) ${(info.status["special_defense"]/255)*100}%, rgba(45,45,45,1)${(info.status["special_defense"]/255)*100}%); border:3px solid rgb(45,45,45); border-radius:15px; height:10px">
+                        </div>
+                    </div>
+                    <div id="speed">Speed: ${info.status["speed"]}
+                        <div id="speed2" style="background: linear-gradient(90deg, rgba(175,175,175,1) ${(info.status["speed"]/255)*100}%, rgba(45,45,45,1) ${(info.status["speed"]/255)*100}%); border:3px solid rgb(45,45,45); border-radius:15px; height:10px">
+                        </div>
+                    </div>
+                `;
+
+    //adiciona a descricao do pokemon                
+    document.getElementById("descricaoPopUp").innerHTML= info.descricao
+}
+
+
+
+
+
+async function comparar(){
+    if(pokemonsComparar[1] == null){
+        pokemonsComparar.splice(1,1,document.getElementById("pokemonNamePopUp").innerHTML);
+        //pokemonsComparar= [NULL, 'POKEMON1']
+
+        document.getElementById("CompararIcon").style.display="grid";
+        document.getElementById("PopUpInfo").style.display = "none";
+        document.getElementById("CompararIcon").innerHTML=`<img src="${document.getElementById("imagemPopUp").children[0].src}" alt="Comparar Pokemons" style="width: 40px;height: 45px;margin: 2px 0px 0px 5px;"></img>`
+    }
+    else{
+        pokemonsComparar.splice(0,1,document.getElementById("pokemonNamePopUp").innerHTML);
+        //pokemonsComparar= ['POKEMON2', 'POKEMON1']
+        console.log(pokemonsComparar)
+
+        document.getElementById("ShowComparacao").style.display="inline-flex";
+        document.getElementById("ShowInfo").style.display="none";
+        document.getElementById("CompararPokemon1").style.display="grid";
+        document.getElementById("CompararPokemon2").style.display="grid";
+        
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+    for(let indexX=0;indexX<2;indexX++){
+        console.log("arrancando info de: "+ pokemonsComparar[1-indexX])
+        /*
+        if(document.getElementById("ID_ListaDeMegas").classList[1] == "mostrar"){
+        document.getElementById("ID_ListaDeMegas").classList.toggle("mostrar");
+        }
+        
+        //define o display para mostrar
+        document.getElementById("PopUpInfo").style.display = "inline-block";
+        document.getElementById("ShowInfo").style.display="grid";
+        */
+        //pega as informações do pokemon
+        let info = await infoPokemons(pokemonsComparar[1-indexX]);
+
+        //seu numero na pokedex
+        document.getElementById(`pokeEntryComparar${indexX+1}`).innerHTML=info.entrada;
+        //sua imagem
+        document.getElementById(`imagemComparar${indexX+1}`).children[0].src= info.imagem.normal;
+        //seu nome
+        document.getElementById(`pokemonNameComparar${indexX+1}`).innerHTML= info.nome;
+
+        /*
+        //suas variantes de mega evoluções
+        if(info.alternativo["mega-x"] || info.alternativo["mega-y"] || info.alternativo["mega-z"] || info.alternativo["mega"]){
+            document.getElementById("ID_ListaDeMegas").innerHTML="";
+            document.getElementById("variantes_mega").style.display="unset"
+            for(let variantes in info.alternativo){
+                if(variantes == "gigantamax" || info.alternativo[variantes] == null){continue}
+                
+                document.getElementById("ID_ListaDeMegas").innerHTML+=`
+                <a style="font-size:12px;" onclick="popUpInfo('${info.nome.replace(/(?:-)mega(?:-[xyz])?/i, "").replace("-gmax", "")}-${variantes}')">
+                    <img src="${info.alternativo[variantes]}" alt="${variantes}" style="height:40px;width:40px;margin-right:-5px;margin-left:-5px;">
+                    Mega ${info.nome.replace(/(?:-)mega(?:-[xyz])?/i, "")} ${variantes.replace("mega-x", "X").replace("mega-y", "Y").replace("mega-z", "Z")}
+                </a>
+                `
+            }
+        }else{document.getElementById("variantes_mega").style.display="none"}
+        
+        //esconde o botão de Dynamax    
+        document.getElementById("ID_Dynamax").style.display="none";
+        document.getElementById("ID_Dynamax").classList["collored"];
+
+        //cria o link para redirecionar a foto da Dynamax
+        document.getElementById("ID_Dynamax").innerHTML=`
+            <button onclick="popUpInfo('${info.nome.replace(/(?:-)mega(?:-[xyz])?/i, "").replace("-gmax", "")}${info.nome.includes("-gmax")?"":"-gmax"}')" class="botaoAdicional" id="ID_Dynamax_Botao">
+                <img src="images/giganta_max-removebg.png"  alt="Mega Evo" style="height: 100%;width:162%;border-radius: 100%; margin-left:-5px;">
+            </button>`;
+
+        
+        if(info.alternativo["gigantamax"]){
+            //mostra o icone de Dynamax
+            document.getElementById("ID_Dynamax").style.display="unset";    
+            if(info.nome.includes("-gmax")){
+                //se não tiver na forma Dynamax remove a cor do icone
+                document.getElementById("ID_Dynamax").classList.add("collored");
+            }
+        }
+        
+        //se não tiver na forma Dynamax remove a cor do icone
+        if(!info.nome.includes("-gmax")){
+            document.getElementById("ID_Dynamax").classList.remove("collored");
+        }
+        */
+
+        //Limpa o icone de tipos
+        document.getElementById(`typesComparar${indexX+1}`).innerHTML="";
+
+        //adiciona os tipos correspondentes a este pokemon
+        document.getElementById(`typesComparar${indexX+1}`).innerHTML+=`
+                        <div class="filtro_Elemento_PopUp" id="filtro_${info.tipagem.tipo1}_Comparar${indexX+1}" style="background-color:${cores(info.tipagem.tipo1)}">
+                            ${info.tipagem.tipo1}
+                        </div>
+                    `;
+        if(info.tipagem.tipo1 != info.tipagem.tipo2 && info.tipagem.tipo2 !==null){
+                document.getElementById(`typesComparar${indexX+1}`).innerHTML+=`
+                        <div class="filtro_Elemento_PopUp" id="filtro_${info.tipagem.tipo2}_Comparar${indexX+1}" style="background-color:${cores(info.tipagem.tipo2)}">
+                            ${info.tipagem.tipo2}
+                        </div>
+                    `;
+        }
+
+        //caso remove a div que tiver o ID abaixo, pois o pokemon tem apenas um elemento
+        document.getElementById(`filtro_undefined_Comparar${indexX+1}`)?.remove();
+
+        //cria a barra de status dos pokemons
+        document.getElementById(`statusComparar${indexX+1}`).innerHTML=`
+                        <div id="hp">Hp: ${info.status["hp"]}
+                            <div id="hp2" style="background: linear-gradient(90deg, rgba(175,175,175,1) ${(info.status["hp"]/255)*100}%, rgba(45,45,45,1) ${(info.status["hp"]/255)*100}%); border:3px solid rgb(45,45,45); border-radius:15px; height:10px">
+                            </div>
+                        </div>
+                        <div id="attack">Atk: ${info.status["attack"]}
+                            <div id="attack2" style="background: linear-gradient(90deg, rgba(175,175,175,1) ${(info.status["attack"]/255)*100}%, rgba(45,45,45,1) ${(info.status["attack"]/255)*100}%); border:3px solid rgb(45,45,45); border-radius:15px; height:10px">
+                            </div>
+                        </div>
+                        <div id="defense">Defense: ${info.status["defense"]}
+                            <div id="defense2" style="background: linear-gradient(90deg, rgba(175,175,175,1) ${(info.status["defense"]/255)*100}%, rgba(45,45,45,1)  ${(info.status["defense"]/255)*100}%); border:3px solid rgb(45,45,45); border-radius:15px; height:10px">
+                            </div>
+                        </div>
+                        <div id="sp_attack">Sp Atk: ${info.status["special_attack"]}
+                            <div id="sp_attack2" style="background: linear-gradient(90deg, rgba(175,175,175,1) ${(info.status["special_attack"]/255)*100}%, rgba(45,45,45,1) ${(info.status["special_attack"]/255)*100}%); border:3px solid rgb(45,45,45); border-radius:15px; height:10px">
+                            </div>    
+                        </div>
+                        <div id="sp_defense">Sp Defense: ${info.status["special_defense"]}
+                            <div id="sp_defense2" style="background: linear-gradient(90deg, rgba(175,175,175,1) ${(info.status["special_defense"]/255)*100}%, rgba(45,45,45,1)${(info.status["special_defense"]/255)*100}%); border:3px solid rgb(45,45,45); border-radius:15px; height:10px">
+                            </div>
+                        </div>
+                        <div id="speed">Speed: ${info.status["speed"]}
+                            <div id="speed2" style="background: linear-gradient(90deg, rgba(175,175,175,1) ${(info.status["speed"]/255)*100}%, rgba(45,45,45,1) ${(info.status["speed"]/255)*100}%); border:3px solid rgb(45,45,45); border-radius:15px; height:10px">
+                            </div>
+                        </div>
+                    `;
+
+        }
+    }
+    
+
+}
+
+
+buscaApi();
