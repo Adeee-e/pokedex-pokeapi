@@ -71,7 +71,7 @@ Projeto desenvolvido por:
   GitHub: [kaykyhardy05](https://github.com/kaykyhardy05)
 
 - **Gustavo**  
-  GitHub: `ADICIONAR_GITHUB_GUSTAVO`
+  GitHub: [CaroniG-12](https://github.com/CaroniG-12)
 
 - **Vitor**  
   GitHub: [VitorZanellii](https://github.com/VitorZanellii)
