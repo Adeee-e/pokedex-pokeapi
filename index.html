@@ -15,7 +15,7 @@
             <button id="ButtonDeco" onclick="ClosePopUpInfo()">
             </button>
             <div id="ShowInfo">
-                <div id="imagemPopUp">
+                <div id="imagemPopUp" class="imagemPhone">
                     <img src="https://i.pinimg.com/736x/d3/5c/7d/d35c7d74032c0bdb54361e43a6112647.jpg"  alt="Personagem Bloqueado" style="height: 200px;width:200px;">
                 </div>  
                 <div id="pokeEntryPopUp"></div>
@@ -29,9 +29,31 @@
                 <div id="ID_Dynamax" class="CLASS_Dynamax" style="display:none;"></div>
 
                 <h1 id="pokemonNamePopUp">Nome</h1>
-                <div id="typesPopUp" style="display: inline-flex;"></div>
+                <div id="typesPopUp" class="typesPhone" style="display: inline-flex;"></div>
                 <div id="statusPopUp"></div>
                 <div id="descricaoPopUp"></div>
+                
+            </div>
+            <div id="ShowComparacao">
+                <div id="CompararPokemon1">
+                    <div id="imagemComparar1" class="imagemPhone">
+                        <img src="https://i.pinimg.com/736x/d3/5c/7d/d35c7d74032c0bdb54361e43a6112647.jpg"  alt="Personagem Bloqueado" style="height: 200px;width:200px;">
+                    </div>  
+                    <div id="pokeEntryComparar1"></div>
+                    <h1 id="pokemonNameComparar1">Nome</h1>
+                    <div id="typesComparar1" style="display: inline-flex;"></div>
+                    <div id="statusComparar1" class="statusPhone"></div>
+                </div>
+
+                <div id="CompararPokemon2">
+                    <div id="imagemComparar2" class="imagemPhone">
+                        <img src="https://i.pinimg.com/736x/d3/5c/7d/d35c7d74032c0bdb54361e43a6112647.jpg"  alt="Personagem Bloqueado" style="height: 200px;width:200px;">
+                    </div>  
+                    <div id="pokeEntryComparar2"></div>
+                    <h1 id="pokemonNameComparar2">Nome</h1>
+                    <div id="typesComparar2" style="display: inline-flex;"></div>
+                    <div id="statusComparar2" class="statusPhone"></div>
+                </div>
                 
             </div>
             <button onclick="comparar()" id="Comparar">
@@ -69,7 +91,9 @@
         </div>
     </div>
 
-
+    <div id="CompararIcon" onclick="limparComparacao()">
+        <img src="images/comparacao-removebg.png" alt="Comparar Pokemons" style="width: 40px;height: 45px;margin: -3px 0px 0px -9px;"></img>
+    </div>
     
     <script src="main.js"></script>
 </body>

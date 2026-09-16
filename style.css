@@ -271,10 +271,6 @@ input::-webkit-inner-spin-button {
 }
 
 #imagemPopUp{
-    background-color: rgba(240, 248, 255, 0.2);
-    border: 2px solid rgba(134, 184, 160, 0.8); ;
-    border-radius: 15%;
-
     grid-column: 1 / 6;
     grid-row: 1 / 10; /*1/6*/
 }
@@ -356,11 +352,6 @@ input::-webkit-inner-spin-button {
     
 }
 #statusPopUp{
-    width: 100%;
-    height: 100%;
-    background-color: rgba(240, 248, 255, 0.2);
-    border: 2px solid rgba(134, 184, 160, 0.8);
-    
     grid-column: 7 / 14;
     grid-row: 3 / 10;
 }
@@ -387,5 +378,132 @@ input::-webkit-inner-spin-button {
     border: 5px solid rgba(200, 50, 50, 1);
     border-radius: 100%;
     background: #f1f1f1;
-    translate: -60px 350px;
+    position: fixed;
+    bottom: 170px;
+    right: 280px;
+    margin: 10px; 
+}
+
+#CompararIcon{
+    display: none;
+    position: fixed;
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(200, 50, 50, 1);
+    border-radius: 100%;
+    background: #f1f1f1;
+    bottom: 0;
+    right: 0;
+    margin: 10px; 
+}
+
+
+
+#CompararPokemon1{
+    width: 85%;
+    height: 97.6%;
+    background-color: rgba(240, 248, 255, 0.);
+
+    margin: 0.5% 7.5%;
+
+    display:none;
+    grid-template-columns: repeat(15, 25px);
+    grid-template-rows: repeat(15, 1fr);
+}
+
+
+
+#imagemComparar1{
+    grid-column: 1 / 11;
+    grid-row: 1 / 10; /*1/6*/
+}
+
+#pokeEntryComparar1{
+    align-self: center;
+    justify-self: center;
+    grid-column: 1 / 2;
+    grid-row: 1 / 2; 
+}
+
+#pokemonNameComparar1{
+    font-size: 32px;
+    justify-self: center;
+    text-transform: capitalize;
+    
+    grid-column: 1 / 11;
+    grid-row: 7 / 10;
+}
+
+#typesComparar1{
+    grid-column: 11 / 16;
+    grid-row: 1 / 2;
+}
+
+#statusComparar1{
+    grid-column: 1 / 11;
+    grid-row: 10 / -1;
+}
+
+
+
+#CompararPokemon2{
+    width: 85%;
+    height: 97.6%;
+    background-color: rgba(240, 248, 255, 0.);
+
+    margin: 0.5% 7.5%;
+
+    display:none;
+    grid-template-columns: repeat(15, 25px);
+    grid-template-rows: repeat(15, 1fr);
+}
+
+
+
+#imagemComparar2{
+    grid-column: -1 / -11;
+    grid-row: 1 / 10; /*1/6*/
+}
+
+#pokeEntryComparar2{
+    align-self: center;
+    justify-self: center;
+    grid-column: -1 / -2;
+    grid-row: 1 / 2; 
+}
+
+#pokemonNameComparar2{
+    font-size: 32px;
+    justify-self: center;
+    text-transform: capitalize;
+    
+    grid-column: -1 / -11;
+    grid-row: 7 / 10;
+}
+
+#typesComparar2{
+    grid-column: -11 / -16;
+    grid-row: 1 / 2;
+}
+
+#statusComparar2{
+    grid-column: -1 / -11;
+    grid-row: 10 / -1;
+}
+
+
+
+
+
+.imagemPhone{
+    background-color: rgba(240, 248, 255, 0.2);
+    border: 2px solid rgba(134, 184, 160, 0.8); ;
+    border-radius: 15%;
+}
+
+.statusPhone{    
+    width: 100%;
+    height: 100%;
+    background-color: rgba(240, 248, 255, 0.2);
+    border: 2px solid rgba(134, 184, 160, 0.8);
 }
