@@ -1,6 +1,9 @@
 'use strict';
 
-let pagina=document.getElementById("pageN").value;
+const TOTAL_POKEMONS = 1025;
+const POKEMONS_POR_PAGINA = 24;
+
+let pagina=document.getElementById("pageN").valueAsNumber;
 
 const pokemonsComparar=[null,null]
 

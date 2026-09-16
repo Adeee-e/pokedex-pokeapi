@@ -1,73 +1,21 @@
 'use strict';
 
-const buscaApi = async() => {
+const buscaApi = async () => {
 
-    console.log(`buscaApi([${fifoFiltroTipo[0]},${fifoFiltroTipo[1]}])`)
-    document.getElementById("Caixa_Pokemon").innerHTML = "";
+    const caixaPokemon = document.getElementById("Caixa_Pokemon");
 
-    const nomePokemon = document.getElementById('Pesquisa').value.trim().toLowerCase();
-    var filtragem=false;
-    var mostrar=[24*pagina, 24*(pagina+1), 0];
-    var tipos;
+    caixaPokemon.innerHTML = "";
 
-    if(nomePokemon === ""){
-        console.log(fifoFiltroTipo)
-        if(fifoFiltroTipo[1]!=null){// Verifica se tem filtros de Tipo de Pokemon
-            filtragem= true;
-            const url_Tipos = `https://pokeapi.co/api/v2/type/${fifoFiltroTipo[1]}/`;
-            const dadoTipos = await fetch(url_Tipos);
-            tipos = await dadoTipos.json();
-        }
+    const nomePokemon = document.getElementById("Pesquisa").value.trim().toLowerCase();
 
-
-        if(tipos?.results || tipos?.pokemon){// Verifica se foi criado
-            for (const pokemonResults of tipos.results??tipos.pokemon) {
-                mostrar[2]++;
-                console.log(`(${mostrar[0] >= mostrar[2]} && ${mostrar[2] >= mostrar[1]})`)
-                if(mostrar[0] >= mostrar[2]){console.log("skip");continue;}
-                if(mostrar[2] > mostrar[1]){break;}
-                var info = await infoPokemons(pokemonResults.name??pokemonResults.pokemon.name);
-                
-                // Se tiver um segundo Tipo ativo ele verifica se o pokemon 
-                // se encaixa e permite a criação do conteiner
-                if(fifoFiltroTipo[0]!=null){
-                
-                    // verifica em qual posicao esta o Tipo principal
-                    if(info.tipagem.tipo1 == tipos.name){ // 1°
-                        // verifica se o 2° Tipo é igual a um dos filtro
-                        if(!(info.tipagem.tipo2 == fifoFiltroTipo[0] ||
-                             info.tipagem.tipo2 == fifoFiltroTipo[1] ))
-                            {continue;}
-
-                    }
-                    if(info.tipagem.tipo2 == tipos.name){// 2°
-                        // verifica se a 1° Tipo é igual a um dos filtro
-                        if(!(info.tipagem.tipo1 == fifoFiltroTipo[0] ||
-                             info.tipagem.tipo1 == fifoFiltroTipo[1] ))
-                            {continue;}
-
-                    }
-                }
-                console.log(info.nome)
-                document.getElementById("Caixa_Pokemon").innerHTML += criarContainer(info);
-                console.log(mostrar)
-            }// Fin for()
-        }else{
-            for(let i=24*pagina+1; i<=24*(pagina+1);i++){
-                document.getElementById("Caixa_Pokemon").innerHTML += criarContainer(await infoPokemons(i));
-            }
-        }
-    }
-    else {
-        //colocado o try catch para caso o pokemon não seja encontrado, apareça uma mensagem de erro na pesquisa.
-        console.log("Pokemon em pesquisa");
+    // PESQUISA POR NOME OU NÚMERO
+    if (nomePokemon !== "") {
 
         try {
 
             const info = await infoPokemons(nomePokemon);
 
-            document.getElementById("Caixa_Pokemon").innerHTML +=
-                criarContainer(info);
+            caixaPokemon.innerHTML = criarContainer(info);
 
         } catch (erro) {
 
@@ -75,26 +23,128 @@ const buscaApi = async() => {
 
             if (erro.message === "POKEMON_NAO_ENCONTRADO") {
 
-                document.getElementById("Caixa_Pokemon").innerHTML = `
+                caixaPokemon.innerHTML = `
                     <div class="mensagemErro">
                         <h2>Pokémon não encontrado</h2>
-                        <p>Verifique o nome ou número informado e tente novamente.</p>
+                        <p>
+                            Verifique o nome ou número informado
+                            e tente novamente.
+                        </p>
                     </div>
                 `;
 
             } else {
 
-                document.getElementById("Caixa_Pokemon").innerHTML = `
+                caixaPokemon.innerHTML = `
                     <div class="mensagemErro">
                         <h2>Erro ao consultar a Pokédex</h2>
-                        <p>Tente novamente em alguns instantes.</p>
+                        <p>
+                            Tente novamente em alguns instantes.
+                        </p>
                     </div>
                 `;
             }
         }
+
+        return;
     }
-    
-}
+
+    // LISTAGEM / FILTROS
+    try {
+
+        const filtrosAtivos = fifoFiltroTipo.filter(tipo => tipo !== null);
+
+        // SEM FILTRO
+        if (filtrosAtivos.length === 0) {
+
+            const primeiroPokemon = pagina * POKEMONS_POR_PAGINA + 1;
+
+            const ultimoPokemon = Math.min((pagina + 1) * POKEMONS_POR_PAGINA,TOTAL_POKEMONS);
+
+            const requisicoes = [];
+
+            for (let id = primeiroPokemon; id <= ultimoPokemon; id++) {
+               
+                requisicoes.push(infoPokemons(id));
+            }
+
+            const pokemons = await Promise.all(requisicoes);
+
+            caixaPokemon.innerHTML = pokemons.map(info => criarContainer(info)).join("");
+
+            return;
+        }
+
+        // COM FILTRO
+        const listasPorTipo = await Promise.all(filtrosAtivos.map(tipo => nomesPokemonsPorTipo(tipo)));
+
+        let nomesFiltrados = listasPorTipo[0];
+
+        // Se houver dois filtros,
+        // fazemos a interseção dos dois conjuntos.
+        if (listasPorTipo.length === 2) {
+
+            const segundoTipo = new Set(listasPorTipo[1]);
+            nomesFiltrados = nomesFiltrados.filter(nome => segundoTipo.has(nome));
+        }
+
+        // PAGINAÇÃO DEPOIS DA FILTRAGEM
+        const ultimaPaginaFiltro = Math.max(0, Math.ceil(nomesFiltrados.length / POKEMONS_POR_PAGINA) - 1);
+
+
+        // Caso o usuário tenha digitado uma página
+        // maior que a quantidade disponível no filtro.
+        if (pagina > ultimaPaginaFiltro) {
+
+            pagina = ultimaPaginaFiltro;
+
+            document.getElementById("pageN").value = pagina;
+        }
+
+
+        const inicio = pagina * POKEMONS_POR_PAGINA;
+
+        const fim = inicio + POKEMONS_POR_PAGINA;
+
+
+        const nomesDaPagina = nomesFiltrados.slice(inicio, fim);
+
+
+        if (nomesDaPagina.length === 0) {
+
+            caixaPokemon.innerHTML = `
+                <div class="mensagemErro">
+                    <h2>Nenhum Pokémon encontrado</h2>
+                    <p>
+                        Não existem Pokémon com os tipos selecionados.
+                    </p>
+                </div>
+            `;
+            return;
+        }
+
+        const pokemons = await Promise.all(
+
+            nomesDaPagina.map(nome => infoPokemons(nome))
+
+        );
+
+        caixaPokemon.innerHTML = pokemons.map(info => criarContainer(info)).join("");
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        caixaPokemon.innerHTML = `
+            <div class="mensagemErro">
+                <h2>Erro ao carregar os Pokémon</h2>
+                <p>
+                    Tente novamente em alguns instantes.
+                </p>
+            </div>
+        `;
+    }
+};
 
 function criarContainer(info){//console.log("Container Criado para "+info.nome)
     return `

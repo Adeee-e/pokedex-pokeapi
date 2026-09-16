@@ -97,3 +97,21 @@ async function infoPokemons(Pokemon){
                        },
         };
 };
+
+
+async function nomesPokemonsPorTipo(tipo) {
+
+    const url = `https://pokeapi.co/api/v2/type/${tipo}`;
+
+    const resposta = await fetch(url);
+
+    if (!resposta.ok) {
+        throw new Error(`ERRO_TIPO_${resposta.status}`);
+    }
+
+    const dados = await resposta.json();
+
+    return dados.pokemon.map(
+        item => item.pokemon.name
+    );
+}

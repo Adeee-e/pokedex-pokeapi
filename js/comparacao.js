@@ -1,9 +1,19 @@
 'use strict';
 
-function limparComparacao(){
-    pokemonsComparar[0] =null;
-    pokemonsComparar[1] =null;
-    document.getElementById("CompararIcon").style.display="none";
+function limparComparacao() {
+
+    pokemonsComparar[0] = null;
+    pokemonsComparar[1] = null;
+
+    document.getElementById("CompararIcon").style.display = "none";
+}
+
+function resetarSelecaoComparacao() {
+
+    pokemonsComparar[0] = null;
+    pokemonsComparar[1] = null;
+
+    document.getElementById("CompararIcon").style.display = "none";
 }
 
 async function comparar(){
@@ -89,6 +99,10 @@ async function comparar(){
                     `;
 
         }
+        // A comparação já foi concluída.
+        // A próxima comparação deve começar do zero.
+        resetarSelecaoComparacao();
+
     }
     
 

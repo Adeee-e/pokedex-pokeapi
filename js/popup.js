@@ -5,6 +5,7 @@ function ClosePopUpInfo(){
     document.getElementById("ShowComparacao").style.display="none";
     document.getElementById("CompararIcon").style.display="none";
     console.log("fechar")
+    limparComparacao();
 }
 
 function expandirMegas() {

@@ -31,66 +31,83 @@ async function filtros(){
     }
 }
 
+function inverterValorElemento(tipoSelecionado) {
 
+    let selecionados = fifoFiltroTipo.filter(
+        tipo => tipo !== null
+    );
 
+    const indice = selecionados.indexOf(tipoSelecionado);
 
+    // Se já estiver selecionado, remove.
+    if (indice !== -1) {
 
-function inverterValorElemento(x){
-    // Verifica (as 2 casas) para ver se o elemento 'x' ja esta selecionado.
-    // {TRUE} :> remove tal elemento 'x', e adiciona null a casa 0
-    console.log()
-    console.log(fifoFiltroTipo)
-    if(fifoFiltroTipo[0] == x ){
-        fifoFiltroTipo.splice(0,1,null);
-        console.log(fifoFiltroTipo)
-    }
-    else if(fifoFiltroTipo[1] == x ){
-        fifoFiltroTipo.splice(1,1);
-        fifoFiltroTipo.splice(0,0,null);
-        console.log(fifoFiltroTipo)
-    }else{
-        // Remove o primeiro elemento
-        fifoFiltroTipo.splice(0,1);
-        
-        // Substitui o segundo elemento se 'filtroTipo' do elemento 'x' for TRUE por 'x'
-        fifoFiltroTipo.splice(1,1,x);
-        //console.log(`pos adicionar: {${fifoFiltroTipo[0]}, ${fifoFiltroTipo[1]}}`)
-        
-        // Os elementos que estiverem dentro de 'fifoFiltroTipo' tem o valor TRUE, ao contrario sera FALSE
-        for(var i in filtroTipo){
-            if(i == fifoFiltroTipo[0] || i == fifoFiltroTipo[1]){
-               // console.log(`filtroTipo[${i}] = true;`)
-                filtroTipo[i]= true;
+        selecionados.splice(indice, 1);
 
-            }else{
-                filtroTipo[i]= false;
-            }
-            
+    } else {
+
+        // Permitimos no máximo dois filtros.
+        // Se já houver dois, removemos o mais antigo.
+        if (selecionados.length === 2) {
+            selecionados.shift();
         }
-    }
-    console.log("entrando no For")
-    
-    for(let i=0,y=1;i<17;i++){
-    //    console.log(` - fifoFiltroTipo[${Object.keys(fifoFiltroTipo)}] = ${!fifoFiltroTipo[i]}`)
-        if(!fifoFiltroTipo[i]){y++}
-        
-        if(y==17){for(let valores in filtroTipo){filtroTipo[valores]=!filtroTipo[valores];console.log(`filtroTipo[${valores}]=${filtroTipo[valores]}`)}}
-    }
-    console.log("saindo no For")
-    console.log(fifoFiltroTipo)
-    atualizarAparenciaFiltroTipos()
 
-    buscaApi([fifoFiltroTipo[0],fifoFiltroTipo[1]]);
+        selecionados.push(tipoSelecionado);
+    }
+
+
+    // Atualiza o estado dos dois filtros.
+    fifoFiltroTipo[0] = selecionados[0] ?? null;
+    fifoFiltroTipo[1] = selecionados[1] ?? null;
+
+
+    // Atualiza o objeto usado pela aparência dos botões.
+    for (const tipo in filtroTipo) {
+        filtroTipo[tipo] = selecionados.includes(tipo);
+    }
+
+
+    // Sempre volta para a primeira página quando o filtro muda.
+    pagina = 0;
+
+    document.getElementById("pageN").value = pagina;
+
+
+    atualizarAparenciaFiltroTipos();
+
+    buscaApi();
 }
 
+function atualizarAparenciaFiltroTipos() {
 
+    const filtrosAtivos = fifoFiltroTipo.filter(tipo => tipo !== null);
+    const nenhumFiltroAtivo = filtrosAtivos.length === 0;
 
+    for (const tipo in filtroTipo) {
 
+        const botao = document.getElementById(`filtro_${tipo}`);
 
+        if (!botao) {
+            continue;
+        }
 
-function atualizarAparenciaFiltroTipos(){
-    for(var i in filtroTipo){
-        document.getElementById(`filtro_${i}`).style["background-color"] = cores(filtroTipo[i]?i:'off');
-        document.getElementById(`filtro_${i}`).style.color = filtroTipo[i]?"black":"white";
+        //sem filtro ativo
+        if (nenhumFiltroAtivo) {
+
+            botao.style.backgroundColor = cores(tipo);
+            botao.style.color = "black";
+
+        } 
+        //com filtro ativo
+        else if (filtroTipo[tipo]) {
+
+            botao.style.backgroundColor = cores(tipo);
+            botao.style.color = "black";
+
+        } else {
+
+            botao.style.backgroundColor = cores("off");
+            botao.style.color = "white";
+        }
     }
 }
