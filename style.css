@@ -491,10 +491,6 @@ input::-webkit-inner-spin-button {
     grid-row: 10 / -1;
 }
 
-
-
-
-
 .imagemPhone{
     background-color: rgba(240, 248, 255, 0.2);
     border: 2px solid rgba(134, 184, 160, 0.8); ;
@@ -506,4 +502,20 @@ input::-webkit-inner-spin-button {
     height: 100%;
     background-color: rgba(240, 248, 255, 0.2);
     border: 2px solid rgba(134, 184, 160, 0.8);
+}
+
+.mensagemErro {
+    width: 100%;
+    padding: 40px;
+    text-align: center;
+}
+
+.mensagemErro h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.mensagemErro p {
+    font-size: 16px;
 }

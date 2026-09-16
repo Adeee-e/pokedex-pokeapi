@@ -1,7 +1,7 @@
 'use strict';
 
 async function filtros(){
-    const url_Tipos = `http://pokeapi.co/api/v2/type`;
+    const url_Tipos = `https://pokeapi.co/api/v2/type`;
     const dadoTipos = await fetch(url_Tipos);
     const listaTipos= await dadoTipos.json();
     const div=document.getElementById("Caixa_Filtro");
