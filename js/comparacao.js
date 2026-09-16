@@ -27,22 +27,9 @@ async function comparar(){
         
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
     for(let indexX=0;indexX<2;indexX++){
         console.log("arrancando info de: "+ pokemonsComparar[1-indexX])
-        /*
-        if(document.getElementById("ID_ListaDeMegas").classList[1] == "mostrar"){
-        document.getElementById("ID_ListaDeMegas").classList.toggle("mostrar");
-        }
         
-        //define o display para mostrar
-        document.getElementById("PopUpInfo").style.display = "inline-block";
-        document.getElementById("ShowInfo").style.display="grid";
-        */
         //pega as informações do pokemon
         let info = await infoPokemons(pokemonsComparar[1-indexX]);
 
@@ -52,49 +39,6 @@ async function comparar(){
         document.getElementById(`imagemComparar${indexX+1}`).children[0].src= info.imagem.normal;
         //seu nome
         document.getElementById(`pokemonNameComparar${indexX+1}`).innerHTML= info.nome;
-
-        /*
-        //suas variantes de mega evoluções
-        if(info.alternativo["mega-x"] || info.alternativo["mega-y"] || info.alternativo["mega-z"] || info.alternativo["mega"]){
-            document.getElementById("ID_ListaDeMegas").innerHTML="";
-            document.getElementById("variantes_mega").style.display="unset"
-            for(let variantes in info.alternativo){
-                if(variantes == "gigantamax" || info.alternativo[variantes] == null){continue}
-                
-                document.getElementById("ID_ListaDeMegas").innerHTML+=`
-                <a style="font-size:12px;" onclick="popUpInfo('${info.nome.replace(/(?:-)mega(?:-[xyz])?/i, "").replace("-gmax", "")}-${variantes}')">
-                    <img src="${info.alternativo[variantes]}" alt="${variantes}" style="height:40px;width:40px;margin-right:-5px;margin-left:-5px;">
-                    Mega ${info.nome.replace(/(?:-)mega(?:-[xyz])?/i, "")} ${variantes.replace("mega-x", "X").replace("mega-y", "Y").replace("mega-z", "Z")}
-                </a>
-                `
-            }
-        }else{document.getElementById("variantes_mega").style.display="none"}
-        
-        //esconde o botão de Dynamax    
-        document.getElementById("ID_Dynamax").style.display="none";
-        document.getElementById("ID_Dynamax").classList["collored"];
-
-        //cria o link para redirecionar a foto da Dynamax
-        document.getElementById("ID_Dynamax").innerHTML=`
-            <button onclick="popUpInfo('${info.nome.replace(/(?:-)mega(?:-[xyz])?/i, "").replace("-gmax", "")}${info.nome.includes("-gmax")?"":"-gmax"}')" class="botaoAdicional" id="ID_Dynamax_Botao">
-                <img src="images/giganta_max-removebg.png"  alt="Mega Evo" style="height: 100%;width:162%;border-radius: 100%; margin-left:-5px;">
-            </button>`;
-
-        
-        if(info.alternativo["gigantamax"]){
-            //mostra o icone de Dynamax
-            document.getElementById("ID_Dynamax").style.display="unset";    
-            if(info.nome.includes("-gmax")){
-                //se não tiver na forma Dynamax remove a cor do icone
-                document.getElementById("ID_Dynamax").classList.add("collored");
-            }
-        }
-        
-        //se não tiver na forma Dynamax remove a cor do icone
-        if(!info.nome.includes("-gmax")){
-            document.getElementById("ID_Dynamax").classList.remove("collored");
-        }
-        */
 
         //Limpa o icone de tipos
         document.getElementById(`typesComparar${indexX+1}`).innerHTML="";

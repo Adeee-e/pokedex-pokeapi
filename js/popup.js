@@ -11,9 +11,6 @@ function expandirMegas() {
     document.getElementById("ID_ListaDeMegas").classList.toggle("mostrar");
 }
 
-
-
-
 async function popUpInfo(PokemonName) {
     
     if(document.getElementById("ID_ListaDeMegas").classList[1] == "mostrar"){
@@ -123,6 +120,22 @@ async function popUpInfo(PokemonName) {
                     </div>
                 `;
 
-    //adiciona a descricao do pokemon                
-    document.getElementById("descricaoPopUp").innerHTML= info.descricao
-}
+    //adiciona a descricao, altura, peso e habilidades do pokemon              
+    document.getElementById("descricaoPopUp").innerHTML = `
+        <p><strong>Altura:</strong> ${info.altura} m</p>
+
+        <p><strong>Peso:</strong> ${info.peso} kg</p>
+
+        <p>
+            <strong>Habilidades:</strong>
+            ${info.habilidades.join(", ")}
+        </p>
+
+        <br>
+
+        <p>
+            <strong>Descrição:</strong>
+            ${info.descricao}
+        </p>
+    `;
+    }

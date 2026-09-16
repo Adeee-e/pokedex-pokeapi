@@ -63,10 +63,13 @@ async function infoPokemons(Pokemon){
     
     return {
             ["entrada"]:specie.order,
-            ["nome"]:Pokemon.name,
-            ["regiao"]:Pokemon.encounters,
-            ["geracao"]:Pokemon.game_indices[0]?.version["name"],
-            ["descricao"]:descricao,
+            ["nome"]: Pokemon.name,
+            ["altura"]: Pokemon.height / 10,
+            ["peso"]: Pokemon.weight / 10,
+            ["habilidades"]: Pokemon.abilities.map(habilidade => habilidade.ability.name.replaceAll("-", " ")),
+            ["regiao"]: Pokemon.encounters,
+            ["geracao"]: Pokemon.game_indices[0]?.version["name"],
+            ["descricao"]: descricao,
             ["imagem"]:{"normal" : Pokemon.sprites.other["official-artwork"]["front_default"],
                         "shiny"  : Pokemon.sprites.other["official-artwork"]["front_shiny"]
                        },
