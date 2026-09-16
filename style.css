@@ -382,11 +382,10 @@ input::-webkit-inner-spin-button {
 
 
 #Comparar{
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     border: 5px solid rgba(200, 50, 50, 1);
     border-radius: 100%;
     background: #f1f1f1;
-    margin-top: 38.5%;
-    margin-left: -80px;
+    translate: -60px 350px;
 }
